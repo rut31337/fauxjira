@@ -10,6 +10,7 @@
     fauxjira_admin_password: "{{ fauxjira_admin_password | default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits')) }}"
     fauxjira_user_password: "{{ fauxjira_user_password | default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits')) }}"
     fauxjira_storage_size: "{{ fauxjira_storage_size | default('1Gi') }}"
+    fauxjira_port: "{{ fauxjira_port | default('6778') }}"
 
   tasks:
     - name: Create namespace
@@ -59,8 +60,10 @@
                   - name: fauxjira
                     image: "{{ fauxjira_image }}"
                     ports:
-                      - containerPort: 6778
+                      - containerPort: "{{ fauxjira_port | int }}"
                     env:
+                      - name: FAUXJIRA_PORT
+                        value: "{{ fauxjira_port }}"
                       - name: FAUXJIRA_ADMIN_PASSWORD
                         value: "{{ fauxjira_admin_password }}"
                       - name: FAUXJIRA_USER_PASSWORD
@@ -73,7 +76,7 @@
                     readinessProbe:
                       httpGet:
                         path: /rest/api/2/serverInfo
-                        port: 6778
+                        port: "{{ fauxjira_port | int }}"
                       initialDelaySeconds: 5
                       periodSeconds: 10
                 volumes:
@@ -94,8 +97,8 @@
             selector:
               app: fauxjira
             ports:
-              - port: 6778
-                targetPort: 6778
+              - port: "{{ fauxjira_port | int }}"
+                targetPort: "{{ fauxjira_port | int }}"
 
     - name: Create Route
       kubernetes.core.k8s:
@@ -111,7 +114,7 @@
               kind: Service
               name: fauxjira
             port:
-              targetPort: 6778
+              targetPort: "{{ fauxjira_port | int }}"
             tls:
               termination: edge
               insecureEdgeTerminationPolicy: Redirect
