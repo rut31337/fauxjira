@@ -90,35 +90,71 @@ docker run -p 6778:6778 \
 
 ## Deploy to OpenShift
 
-The Ansible playbook builds the image on-cluster from the GitHub repo using a BuildConfig.
+The Ansible playbook builds the image on-cluster from the GitHub repo using a BuildConfig. It only triggers a new build when the git source has changed.
+
+### Prerequisites
+
+- `KUBECONFIG` env var pointing to a cluster with the internal image registry enabled
+- `ansible` and `kubernetes.core` collection installed (`make venv` sets this up)
+
+### Quick deploy
 
 ```bash
-export KUBECONFIG=$HOME/secrets/ocpvdev01.dal13.infra.demo.redhat.com.kubeconfig
+export KUBECONFIG=/path/to/your/kubeconfig
 ansible-playbook ansible/deploy-fauxjira.yml
 ```
 
-Override defaults with extra vars:
+### Local overrides
+
+Copy the example vars file and customize:
+
+```bash
+cp ansible/vars.local.yml.example ansible/vars.local.yml
+```
+
+Available overrides in `vars.local.yml`:
+
+```yaml
+fauxjira_route_host: fauxjira.apps.mycluster.example.com
+fauxjira_admin_password: my-admin-pass
+fauxjira_user_password: my-user-pass
+fauxjira_namespace: fauxjira
+fauxjira_port: "6778"
+fauxjira_storage_size: 1Gi
+```
+
+Override via extra vars:
 
 ```bash
 ansible-playbook ansible/deploy-fauxjira.yml \
   -e fauxjira_namespace=my-fauxjira \
-  -e fauxjira_admin_password=secretpass \
-  -e fauxjira_port=8080
+  -e fauxjira_admin_password=secretpass
 ```
+
+### Notes
+
+- Uses `Recreate` deployment strategy (required for RWO PVC)
+- Build is skipped if the latest git commit already has a successful build
+- Passwords are stable defaults — override in `vars.local.yml` for your environment
+- `vars.local.yml` is gitignored
 
 ## Development
 
 ```bash
+# Set up Python venv for ansible-lint
+make venv
+
 # Run tests
 make test
 
-# Lint
+# Lint (Go + Ansible)
 make lint
+make ansible-lint
 
 # Format code
 make fmt
 
-# Full check (fmt + lint + test + build)
+# Full check (fmt + lint + test + build + ansible-lint)
 make check
 
 # Install pre-commit hooks
@@ -127,8 +163,9 @@ make pre-commit-install
 
 ## Tech Stack
 
-- Go 1.22+
+- Go 1.25+
 - SQLite via `modernc.org/sqlite` (pure Go, no CGO)
 - htmx for dynamic UI
 - Go `html/template` for server-side rendering
 - `embed.FS` for embedded static assets
+- Ansible + `kubernetes.core` for OpenShift deployment
