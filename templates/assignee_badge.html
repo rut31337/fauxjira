@@ -1,0 +1,10 @@
+{{define "assignee_badge"}}
+<div class="assignee-cell">
+  {{if .}}
+  <div class="avatar" style="background:#0052cc;">{{slice . 0 1}}</div>
+  <span>{{.}}</span>
+  {{else}}
+  <span class="text-muted">Unassigned</span>
+  {{end}}
+</div>
+{{end}}

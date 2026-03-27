@@ -1,0 +1,89 @@
+{{define "ticket_detail"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head"}}</head>
+<body>
+{{template "navbar" .}}
+<div class="container">
+  <div class="ticket-detail">
+    <div class="ticket-detail-header">
+      <div>
+        <div class="text-muted mb-8">{{.Ticket.Key}}</div>
+        <h1>{{.Ticket.Summary}}</h1>
+      </div>
+    </div>
+
+    <div class="ticket-meta">
+      <div class="ticket-meta-label">Status</div>
+      <div id="status-container">
+        {{template "status_dropdown" .}}
+      </div>
+
+      <div class="ticket-meta-label">Assignee</div>
+      <div id="assignee-container">
+        {{template "assignee_dropdown" .}}
+      </div>
+
+      <div class="ticket-meta-label">Reporter</div>
+      <div>{{.Ticket.Reporter}}</div>
+
+      <div class="ticket-meta-label">Labels</div>
+      <div>
+        {{range .Ticket.Labels}}<span class="label">{{.}}</span>{{end}}
+        {{if not .Ticket.Labels}}<span class="text-muted">None</span>{{end}}
+      </div>
+
+      <div class="ticket-meta-label">Created</div>
+      <div class="text-muted">{{.Ticket.CreatedAt.Format "2006-01-02 15:04"}}</div>
+
+      <div class="ticket-meta-label">Updated</div>
+      <div class="text-muted">{{.Ticket.UpdatedAt.Format "2006-01-02 15:04"}}</div>
+    </div>
+
+    <h3 class="mt-16 mb-8">Description</h3>
+    <div class="ticket-description">{{if .Ticket.Description}}{{.Ticket.Description}}{{else}}No description{{end}}</div>
+  </div>
+</div>
+{{template "scripts"}}
+</body>
+</html>
+{{end}}
+
+{{define "status_dropdown"}}
+<div class="dropdown">
+  <span class="status-badge {{statusClass .Ticket.Status}}" onclick="toggleDropdown(this)" style="cursor:pointer;">
+    {{.Ticket.Status}}
+  </span>
+  <div class="dropdown-menu">
+    {{range .Statuses}}
+    <a class="dropdown-item"
+       hx-post="/web/update/status/{{$.Ticket.Key}}"
+       hx-vals='{"status":"{{.}}"}'
+       hx-target="#status-container"
+       hx-swap="innerHTML">{{.}}</a>
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+{{define "assignee_dropdown"}}
+<div class="dropdown">
+  <div class="assignee-cell" onclick="toggleDropdown(this)" style="cursor:pointer;">
+    {{if .Ticket.Assignee}}
+    <div class="avatar" style="background:#0052cc;">{{slice .Ticket.Assignee 0 1}}</div>
+    <span>{{.Ticket.Assignee}}</span>
+    {{else}}
+    <span class="text-muted">Unassigned</span>
+    {{end}}
+  </div>
+  <div class="dropdown-menu">
+    {{range .Users}}
+    <a class="dropdown-item"
+       hx-post="/web/update/assignee/{{$.Ticket.Key}}"
+       hx-vals='{"assignee":"{{.Username}}"}'
+       hx-target="#assignee-container"
+       hx-swap="innerHTML">{{.DisplayName}}</a>
+    {{end}}
+  </div>
+</div>
+{{end}}

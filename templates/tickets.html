@@ -1,0 +1,38 @@
+{{define "tickets"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head"}}</head>
+<body>
+{{template "navbar" .}}
+<div class="container">
+  <div class="page-header">
+    <div class="flex items-center gap-8">
+      <h1 class="page-title">FJ Board</h1>
+      <span class="issue-count">{{len .Tickets}} issues</span>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('create-modal')">Create</button>
+  </div>
+
+  <table class="ticket-table">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Summary</th>
+        <th>Status</th>
+        <th>Assignee</th>
+        <th>Labels</th>
+      </tr>
+    </thead>
+    <tbody id="ticket-list">
+      {{range .Tickets}}
+      {{template "ticket_row" .}}
+      {{end}}
+    </tbody>
+  </table>
+
+  {{template "create_modal" .}}
+</div>
+{{template "scripts"}}
+</body>
+</html>
+{{end}}

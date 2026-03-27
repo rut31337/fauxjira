@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>fauxjira — Login</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="login-page">
+    <img src="/static/logo.png" alt="fauxjira" class="login-logo">
+    <div class="login-title">FAUXJIRA</div>
+    <div class="login-subtitle">Project Mismanagement Tool</div>
+    <form class="login-form" method="POST" action="/login">
+      {{if .Error}}<div style="color:#de350b;margin-bottom:12px;font-size:14px;">{{.Error}}</div>{{end}}
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Log in</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{{define "ticket_row"}}
+<tr>
+  <td><a class="ticket-key" href="/issue/{{.Key}}">{{.Key}}</a></td>
+  <td>{{.Summary}}</td>
+  <td>{{template "status_badge" .Status}}</td>
+  <td>
+    <div class="assignee-cell">
+      {{if .Assignee}}
+      <div class="avatar" style="background:#0052cc;">{{slice .Assignee 0 1}}</div>
+      <span>{{.Assignee}}</span>
+      {{else}}
+      <span class="text-muted">Unassigned</span>
+      {{end}}
+    </div>
+  </td>
+  <td>{{range .Labels}}<span class="label">{{.}}</span>{{end}}</td>
+</tr>
+{{end}}
