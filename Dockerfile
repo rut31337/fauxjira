@@ -9,5 +9,5 @@ FROM alpine:3.19
 RUN apk add --no-cache ca-certificates
 COPY --from=build /fauxjira /fauxjira
 RUN mkdir -p /data
-EXPOSE 8080
+EXPOSE 6778
 ENTRYPOINT ["/fauxjira"]

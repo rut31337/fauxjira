@@ -16,7 +16,7 @@ type Config struct {
 
 func LoadConfig() Config {
 	c := Config{
-		Port:          envOrDefault("FAUXJIRA_PORT", "8080"),
+		Port:          envOrDefault("FAUXJIRA_PORT", "6778"),
 		DBPath:        envOrDefault("FAUXJIRA_DB_PATH", "fauxjira.db"),
 		AdminPassword: os.Getenv("FAUXJIRA_ADMIN_PASSWORD"),
 		UserPassword:  os.Getenv("FAUXJIRA_USER_PASSWORD"),

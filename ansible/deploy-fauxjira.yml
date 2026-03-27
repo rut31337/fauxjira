@@ -59,7 +59,7 @@
                   - name: fauxjira
                     image: "{{ fauxjira_image }}"
                     ports:
-                      - containerPort: 8080
+                      - containerPort: 6778
                     env:
                       - name: FAUXJIRA_ADMIN_PASSWORD
                         value: "{{ fauxjira_admin_password }}"
@@ -73,7 +73,7 @@
                     readinessProbe:
                       httpGet:
                         path: /rest/api/2/serverInfo
-                        port: 8080
+                        port: 6778
                       initialDelaySeconds: 5
                       periodSeconds: 10
                 volumes:
@@ -94,8 +94,8 @@
             selector:
               app: fauxjira
             ports:
-              - port: 8080
-                targetPort: 8080
+              - port: 6778
+                targetPort: 6778
 
     - name: Create Route
       kubernetes.core.k8s:
@@ -111,7 +111,7 @@
               kind: Service
               name: fauxjira
             port:
-              targetPort: 8080
+              targetPort: 6778
             tls:
               termination: edge
               insecureEdgeTerminationPolicy: Redirect
