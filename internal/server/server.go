@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func main() {
+func Run() {
 	cfg := LoadConfig()
 
 	db, err := InitDB(cfg.DBPath)

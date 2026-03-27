@@ -1,5 +1,6 @@
-fauxjira
+/fauxjira
 fauxjira.db
+.DS_Store
 *.db-journal
 .superpowers/
 .venv/

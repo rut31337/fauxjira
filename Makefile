@@ -10,7 +10,7 @@ fmt:
 	gofmt -w .
 
 build:
-	CGO_ENABLED=0 go build -o fauxjira .
+	CGO_ENABLED=0 go build -o fauxjira ./cmd/fauxjira
 
 clean:
 	rm -f fauxjira fauxjira.db
