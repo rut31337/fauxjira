@@ -142,3 +142,77 @@ func TestAPISearch(t *testing.T) {
 		t.Errorf("expected 1 result, got %d", total)
 	}
 }
+
+func TestAPIUserLookup(t *testing.T) {
+	db, _, mux := testServer(t)
+	RegisterUserRoutes(mux, db)
+
+	req := authedRequest("GET", "/rest/api/2/user?username=alice", nil)
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if rr.Code != 200 {
+		t.Fatalf("expected 200, got %d", rr.Code)
+	}
+	var resp map[string]interface{}
+	json.Unmarshal(rr.Body.Bytes(), &resp)
+	if resp["displayName"] != "Alice Chen" {
+		t.Errorf("expected 'Alice Chen', got '%v'", resp["displayName"])
+	}
+}
+
+func TestAPIServerInfo(t *testing.T) {
+	db, _, mux := testServer(t)
+	RegisterUserRoutes(mux, db)
+
+	req := authedRequest("GET", "/rest/api/2/serverInfo", nil)
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if rr.Code != 200 {
+		t.Fatalf("expected 200, got %d", rr.Code)
+	}
+	var resp map[string]interface{}
+	json.Unmarshal(rr.Body.Bytes(), &resp)
+	if resp["serverTitle"] != "fauxjira" {
+		t.Errorf("expected 'fauxjira', got '%v'", resp["serverTitle"])
+	}
+}
+
+func TestAPIAdminReset(t *testing.T) {
+	db, cfg, mux := testServer(t)
+	RegisterAdminRoutes(mux, db, cfg)
+
+	CreateTicket(db, &Ticket{Summary: "Will be wiped", Reporter: "admin", Labels: []string{}})
+
+	req := authedRequest("POST", "/admin/reset", nil)
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if rr.Code != 200 {
+		t.Fatalf("expected 200, got %d: %s", rr.Code, rr.Body.String())
+	}
+
+	tickets, _ := ListTickets(db)
+	if len(tickets) != 0 {
+		t.Errorf("expected 0 tickets, got %d", len(tickets))
+	}
+}
+
+func TestAPIAdminListUsers(t *testing.T) {
+	db, cfg, mux := testServer(t)
+	RegisterAdminRoutes(mux, db, cfg)
+
+	req := authedRequest("GET", "/admin/users", nil)
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if rr.Code != 200 {
+		t.Fatalf("expected 200, got %d", rr.Code)
+	}
+	var users []map[string]interface{}
+	json.Unmarshal(rr.Body.Bytes(), &users)
+	if len(users) != 3 {
+		t.Errorf("expected 3 users, got %d", len(users))
+	}
+}
