@@ -20,7 +20,10 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	// Routes will be registered in subsequent tasks
+	RegisterIssueRoutes(mux, db)
+	RegisterSearchRoutes(mux, db)
+	RegisterUserRoutes(mux, db)
+	RegisterAdminRoutes(mux, db, cfg)
 
 	addr := ":" + cfg.Port
 	fmt.Printf("fauxjira listening on %s\n", addr)
