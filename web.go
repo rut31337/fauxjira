@@ -20,6 +20,9 @@ var staticFS embed.FS
 //go:embed assets/fauxjira-logo.png
 var logoBytes []byte
 
+//go:embed assets/favicon.ico
+var faviconBytes []byte
+
 var validStatuses = []string{"To Do", "In Progress", "In Review", "Done"}
 
 func statusClass(status string) string {
@@ -70,6 +73,12 @@ func RegisterWebRoutes(mux *http.ServeMux, db *sql.DB, cfg Config) {
 	mux.HandleFunc("/static/logo.png", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
 		_, _ = w.Write(logoBytes)
+	})
+
+	// Serve favicon
+	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/x-icon")
+		_, _ = w.Write(faviconBytes)
 	})
 
 	// Pages
