@@ -136,6 +136,8 @@
             namespace: "{{ fauxjira_namespace }}"
           spec:
             replicas: 1
+            strategy:
+              type: Recreate
             selector:
               matchLabels:
                 app: fauxjira
