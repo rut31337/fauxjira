@@ -24,6 +24,7 @@ func main() {
 	RegisterSearchRoutes(mux, db)
 	RegisterUserRoutes(mux, db)
 	RegisterAdminRoutes(mux, db, cfg)
+	RegisterWebRoutes(mux, db, cfg)
 
 	addr := ":" + cfg.Port
 	fmt.Printf("fauxjira listening on %s\n", addr)
