@@ -1,0 +1,8 @@
+---
+# Copy to vars.local.yml and customize for your environment
+# fauxjira_namespace: fauxjira
+# fauxjira_route_host: fauxjira.apps.example.com
+# fauxjira_admin_password: mysecretpassword
+# fauxjira_user_password: myuserpassword
+# fauxjira_port: "6778"
+# fauxjira_storage_size: 1Gi

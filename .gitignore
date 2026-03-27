@@ -3,3 +3,4 @@ fauxjira.db
 *.db-journal
 .superpowers/
 .venv/
+ansible/vars.local.yml

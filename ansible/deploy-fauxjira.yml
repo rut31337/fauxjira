@@ -4,6 +4,12 @@
   connection: local
   gather_facts: false
 
+  pre_tasks:
+    - name: Load local overrides if present
+      ansible.builtin.include_vars:
+        file: vars.local.yml
+      failed_when: false
+
   vars:
     fauxjira_namespace: fauxjira
     fauxjira_git_repo: https://github.com/rut31337/fauxjira.git
@@ -192,6 +198,7 @@
             name: fauxjira
             namespace: "{{ fauxjira_namespace }}"
           spec:
+            host: "{{ fauxjira_route_host | default(omit) }}"
             to:
               kind: Service
               name: fauxjira
