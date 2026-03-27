@@ -1,0 +1,4 @@
+fauxjira
+fauxjira.db
+*.db-journal
+.superpowers/
