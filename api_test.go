@@ -20,7 +20,7 @@ func testServer(t *testing.T) (*sql.DB, Config, *http.ServeMux) {
 func authedRequest(method, path string, body interface{}) *http.Request {
 	var buf bytes.Buffer
 	if body != nil {
-		json.NewEncoder(&buf).Encode(body)
+		_ = json.NewEncoder(&buf).Encode(body)
 	}
 	req := httptest.NewRequest(method, path, &buf)
 	req.Header.Set("Content-Type", "application/json")
@@ -49,7 +49,7 @@ func TestAPICreateIssue(t *testing.T) {
 	}
 
 	var resp map[string]interface{}
-	json.Unmarshal(rr.Body.Bytes(), &resp)
+	_ = json.Unmarshal(rr.Body.Bytes(), &resp)
 	if resp["key"] != "FJ-1" {
 		t.Errorf("expected key FJ-1, got %v", resp["key"])
 	}
@@ -57,7 +57,7 @@ func TestAPICreateIssue(t *testing.T) {
 
 func TestAPIGetIssue(t *testing.T) {
 	db, _, mux := testServer(t)
-	CreateTicket(db, &Ticket{Summary: "Get me", Reporter: "admin", Labels: []string{}})
+	_ = CreateTicket(db, &Ticket{Summary: "Get me", Reporter: "admin", Labels: []string{}})
 
 	req := authedRequest("GET", "/rest/api/2/issue/FJ-1", nil)
 	rr := httptest.NewRecorder()
@@ -68,7 +68,7 @@ func TestAPIGetIssue(t *testing.T) {
 	}
 
 	var resp map[string]interface{}
-	json.Unmarshal(rr.Body.Bytes(), &resp)
+	_ = json.Unmarshal(rr.Body.Bytes(), &resp)
 	fields := resp["fields"].(map[string]interface{})
 	if fields["summary"] != "Get me" {
 		t.Errorf("expected summary 'Get me', got '%v'", fields["summary"])
@@ -77,7 +77,7 @@ func TestAPIGetIssue(t *testing.T) {
 
 func TestAPIUpdateIssue(t *testing.T) {
 	db, _, mux := testServer(t)
-	CreateTicket(db, &Ticket{Summary: "Update me", Reporter: "admin", Labels: []string{}})
+	_ = CreateTicket(db, &Ticket{Summary: "Update me", Reporter: "admin", Labels: []string{}})
 
 	body := map[string]interface{}{
 		"fields": map[string]interface{}{
@@ -104,7 +104,7 @@ func TestAPIUpdateIssue(t *testing.T) {
 
 func TestAPIDeleteIssue(t *testing.T) {
 	db, _, mux := testServer(t)
-	CreateTicket(db, &Ticket{Summary: "Delete me", Reporter: "admin", Labels: []string{}})
+	_ = CreateTicket(db, &Ticket{Summary: "Delete me", Reporter: "admin", Labels: []string{}})
 
 	req := authedRequest("DELETE", "/rest/api/2/issue/FJ-1", nil)
 	rr := httptest.NewRecorder()
@@ -124,8 +124,8 @@ func TestAPISearch(t *testing.T) {
 	db, _, mux := testServer(t)
 	RegisterSearchRoutes(mux, db)
 
-	CreateTicket(db, &Ticket{Summary: "Bug one", Status: "To Do", Assignee: "alice", Reporter: "admin", Labels: []string{"bug"}})
-	CreateTicket(db, &Ticket{Summary: "Task two", Status: "In Progress", Assignee: "bob", Reporter: "admin", Labels: []string{"infra"}})
+	_ = CreateTicket(db, &Ticket{Summary: "Bug one", Status: "To Do", Assignee: "alice", Reporter: "admin", Labels: []string{"bug"}})
+	_ = CreateTicket(db, &Ticket{Summary: "Task two", Status: "In Progress", Assignee: "bob", Reporter: "admin", Labels: []string{"infra"}})
 
 	req := authedRequest("GET", `/rest/api/2/search?jql=assignee+%3D+%22alice%22`, nil)
 	rr := httptest.NewRecorder()
@@ -136,7 +136,7 @@ func TestAPISearch(t *testing.T) {
 	}
 
 	var resp map[string]interface{}
-	json.Unmarshal(rr.Body.Bytes(), &resp)
+	_ = json.Unmarshal(rr.Body.Bytes(), &resp)
 	total := int(resp["total"].(float64))
 	if total != 1 {
 		t.Errorf("expected 1 result, got %d", total)
@@ -155,7 +155,7 @@ func TestAPIUserLookup(t *testing.T) {
 		t.Fatalf("expected 200, got %d", rr.Code)
 	}
 	var resp map[string]interface{}
-	json.Unmarshal(rr.Body.Bytes(), &resp)
+	_ = json.Unmarshal(rr.Body.Bytes(), &resp)
 	if resp["displayName"] != "Alice Chen" {
 		t.Errorf("expected 'Alice Chen', got '%v'", resp["displayName"])
 	}
@@ -173,7 +173,7 @@ func TestAPIServerInfo(t *testing.T) {
 		t.Fatalf("expected 200, got %d", rr.Code)
 	}
 	var resp map[string]interface{}
-	json.Unmarshal(rr.Body.Bytes(), &resp)
+	_ = json.Unmarshal(rr.Body.Bytes(), &resp)
 	if resp["serverTitle"] != "fauxjira" {
 		t.Errorf("expected 'fauxjira', got '%v'", resp["serverTitle"])
 	}
@@ -183,7 +183,7 @@ func TestAPIAdminReset(t *testing.T) {
 	db, cfg, mux := testServer(t)
 	RegisterAdminRoutes(mux, db, cfg)
 
-	CreateTicket(db, &Ticket{Summary: "Will be wiped", Reporter: "admin", Labels: []string{}})
+	_ = CreateTicket(db, &Ticket{Summary: "Will be wiped", Reporter: "admin", Labels: []string{}})
 
 	req := authedRequest("POST", "/admin/reset", nil)
 	rr := httptest.NewRecorder()
@@ -211,7 +211,7 @@ func TestAPIAdminListUsers(t *testing.T) {
 		t.Fatalf("expected 200, got %d", rr.Code)
 	}
 	var users []map[string]interface{}
-	json.Unmarshal(rr.Body.Bytes(), &users)
+	_ = json.Unmarshal(rr.Body.Bytes(), &users)
 	if len(users) != 3 {
 		t.Errorf("expected 3 users, got %d", len(users))
 	}

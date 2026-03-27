@@ -40,7 +40,7 @@ func handleCreateIssue(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		Fields struct {
 			Summary     string            `json:"summary"`
 			Description string            `json:"description"`
-			Assignee    map[string]string  `json:"assignee"`
+			Assignee    map[string]string `json:"assignee"`
 			Labels      []string          `json:"labels"`
 		} `json:"fields"`
 	}
@@ -68,7 +68,7 @@ func handleCreateIssue(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"id":   ticket.ID,
 		"key":  ticket.Key,
 		"self": r.Host + "/rest/api/2/issue/" + ticket.Key,
@@ -95,7 +95,7 @@ func handleGetIssue(w http.ResponseWriter, r *http.Request, db *sql.DB, key stri
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"id":  ticket.ID,
 		"key": ticket.Key,
 		"fields": map[string]interface{}{

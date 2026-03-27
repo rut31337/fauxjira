@@ -6,10 +6,10 @@ import (
 )
 
 type User struct {
-	Username    string `json:"username"`
-	DisplayName string `json:"displayName"`
+	Username     string `json:"username"`
+	DisplayName  string `json:"displayName"`
 	PasswordHash string `json:"-"`
-	Role        string `json:"role"`
+	Role         string `json:"role"`
 }
 
 type Ticket struct {
@@ -35,6 +35,6 @@ func ParseLabels(s string) []string {
 	if s == "" {
 		return labels
 	}
-	json.Unmarshal([]byte(s), &labels)
+	_ = json.Unmarshal([]byte(s), &labels)
 	return labels
 }

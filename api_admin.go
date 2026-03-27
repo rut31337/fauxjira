@@ -17,7 +17,7 @@ func RegisterAdminRoutes(mux *http.ServeMux, db *sql.DB, cfg Config) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"status": "reset complete"})
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "reset complete"})
 	}))))
 
 	mux.Handle("/admin/users", BasicAuth(db, AdminOnly(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +31,6 @@ func RegisterAdminRoutes(mux *http.ServeMux, db *sql.DB, cfg Config) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(users)
+		_ = json.NewEncoder(w).Encode(users)
 	}))))
 }

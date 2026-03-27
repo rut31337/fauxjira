@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	_ "modernc.org/sqlite"
 	"golang.org/x/crypto/bcrypt"
+	_ "modernc.org/sqlite"
 )
 
 func InitDB(path string) (*sql.DB, error) {
@@ -81,7 +81,7 @@ func NextTicketKey(db *sql.DB) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var id int
 	err = tx.QueryRow("SELECT next_id FROM ticket_seq WHERE rowid = 1").Scan(&id)
@@ -188,7 +188,7 @@ func ListTickets(db *sql.DB) ([]Ticket, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var tickets []Ticket
 	for rows.Next() {
 		var t Ticket
@@ -219,7 +219,7 @@ func ListUsers(db *sql.DB) ([]User, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var users []User
 	for rows.Next() {
 		var u User

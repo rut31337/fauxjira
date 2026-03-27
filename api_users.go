@@ -19,7 +19,7 @@ func RegisterUserRoutes(mux *http.ServeMux, db *sql.DB) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"name":        user.Username,
 			"displayName": user.DisplayName,
 			"active":      true,
@@ -28,7 +28,7 @@ func RegisterUserRoutes(mux *http.ServeMux, db *sql.DB) {
 
 	mux.Handle("/rest/api/2/serverInfo", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"baseUrl":     "http://" + r.Host,
 			"version":     "0.1.0",
 			"serverTitle": "fauxjira",

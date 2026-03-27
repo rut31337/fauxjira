@@ -22,8 +22,8 @@ func testDB(t *testing.T) (*sql.DB, Config) {
 		t.Fatalf("SeedUsers: %v", err)
 	}
 	t.Cleanup(func() {
-		db.Close()
-		os.Remove(path)
+		_ = db.Close()
+		_ = os.Remove(path)
 	})
 	return db, cfg
 }
@@ -62,7 +62,7 @@ func TestCreateAndGetTicket(t *testing.T) {
 func TestUpdateTicket(t *testing.T) {
 	db, _ := testDB(t)
 	ticket := &Ticket{Summary: "Original", Reporter: "admin"}
-	CreateTicket(db, ticket)
+	_ = CreateTicket(db, ticket)
 
 	updated, err := UpdateTicket(db, "FJ-1", map[string]interface{}{
 		"summary": "Updated",
@@ -82,7 +82,7 @@ func TestUpdateTicket(t *testing.T) {
 func TestDeleteTicket(t *testing.T) {
 	db, _ := testDB(t)
 	ticket := &Ticket{Summary: "To delete", Reporter: "admin"}
-	CreateTicket(db, ticket)
+	_ = CreateTicket(db, ticket)
 
 	if err := DeleteTicket(db, "FJ-1"); err != nil {
 		t.Fatalf("DeleteTicket: %v", err)
@@ -95,8 +95,8 @@ func TestDeleteTicket(t *testing.T) {
 
 func TestListTickets(t *testing.T) {
 	db, _ := testDB(t)
-	CreateTicket(db, &Ticket{Summary: "First", Reporter: "admin"})
-	CreateTicket(db, &Ticket{Summary: "Second", Reporter: "admin"})
+	_ = CreateTicket(db, &Ticket{Summary: "First", Reporter: "admin"})
+	_ = CreateTicket(db, &Ticket{Summary: "Second", Reporter: "admin"})
 
 	tickets, err := ListTickets(db)
 	if err != nil {
@@ -123,7 +123,7 @@ func TestGetUser(t *testing.T) {
 
 func TestResetData(t *testing.T) {
 	db, cfg := testDB(t)
-	CreateTicket(db, &Ticket{Summary: "Will be wiped", Reporter: "admin"})
+	_ = CreateTicket(db, &Ticket{Summary: "Will be wiped", Reporter: "admin"})
 
 	if err := ResetData(db, cfg); err != nil {
 		t.Fatalf("ResetData: %v", err)

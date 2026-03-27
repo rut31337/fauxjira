@@ -69,7 +69,7 @@ func RegisterWebRoutes(mux *http.ServeMux, db *sql.DB, cfg Config) {
 	// Serve logo
 	mux.HandleFunc("/static/logo.png", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
-		w.Write(logoBytes)
+		_, _ = w.Write(logoBytes)
 	})
 
 	// Pages
@@ -92,7 +92,7 @@ func RegisterWebRoutes(mux *http.ServeMux, db *sql.DB, cfg Config) {
 
 func (h *webHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		h.tmpl.ExecuteTemplate(w, "login.html", map[string]interface{}{"Error": ""})
+		_ = h.tmpl.ExecuteTemplate(w, "login.html", map[string]interface{}{"Error": ""})
 		return
 	}
 
@@ -101,12 +101,12 @@ func (h *webHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := GetUser(h.db, username)
 	if err != nil {
-		h.tmpl.ExecuteTemplate(w, "login.html", map[string]interface{}{"Error": "Invalid credentials"})
+		_ = h.tmpl.ExecuteTemplate(w, "login.html", map[string]interface{}{"Error": "Invalid credentials"})
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		h.tmpl.ExecuteTemplate(w, "login.html", map[string]interface{}{"Error": "Invalid credentials"})
+		_ = h.tmpl.ExecuteTemplate(w, "login.html", map[string]interface{}{"Error": "Invalid credentials"})
 		return
 	}
 
@@ -155,7 +155,7 @@ func (h *webHandler) handleTickets(w http.ResponseWriter, r *http.Request) {
 		"Tickets":     tickets,
 		"Users":       users,
 	}
-	h.tmpl.ExecuteTemplate(w, "tickets", data)
+	_ = h.tmpl.ExecuteTemplate(w, "tickets", data)
 }
 
 func (h *webHandler) handleTicketDetail(w http.ResponseWriter, r *http.Request) {
@@ -178,7 +178,7 @@ func (h *webHandler) handleTicketDetail(w http.ResponseWriter, r *http.Request) 
 		"Users":       users,
 		"Statuses":    validStatuses,
 	}
-	h.tmpl.ExecuteTemplate(w, "ticket_detail", data)
+	_ = h.tmpl.ExecuteTemplate(w, "ticket_detail", data)
 }
 
 func (h *webHandler) handleWebCreate(w http.ResponseWriter, r *http.Request) {
@@ -213,10 +213,10 @@ func (h *webHandler) handleWebCreate(w http.ResponseWriter, r *http.Request) {
 		Reporter:    user.Username,
 		Labels:      labels,
 	}
-	CreateTicket(h.db, ticket)
+	_ = CreateTicket(h.db, ticket)
 
 	// Return the new row as an htmx fragment
-	h.tmpl.ExecuteTemplate(w, "ticket_row", ticket)
+	_ = h.tmpl.ExecuteTemplate(w, "ticket_row", ticket)
 }
 
 func (h *webHandler) handleWebUpdateStatus(w http.ResponseWriter, r *http.Request) {
@@ -228,7 +228,7 @@ func (h *webHandler) handleWebUpdateStatus(w http.ResponseWriter, r *http.Reques
 
 	key := strings.TrimPrefix(r.URL.Path, "/web/update/status/")
 	status := r.FormValue("status")
-	UpdateTicket(h.db, key, map[string]interface{}{"status": status})
+	_, _ = UpdateTicket(h.db, key, map[string]interface{}{"status": status})
 
 	ticket, _ := GetTicket(h.db, key)
 	users, _ := ListUsers(h.db)
@@ -237,7 +237,7 @@ func (h *webHandler) handleWebUpdateStatus(w http.ResponseWriter, r *http.Reques
 		"Users":    users,
 		"Statuses": validStatuses,
 	}
-	h.tmpl.ExecuteTemplate(w, "status_dropdown", data)
+	_ = h.tmpl.ExecuteTemplate(w, "status_dropdown", data)
 }
 
 func (h *webHandler) handleWebUpdateAssignee(w http.ResponseWriter, r *http.Request) {
@@ -249,7 +249,7 @@ func (h *webHandler) handleWebUpdateAssignee(w http.ResponseWriter, r *http.Requ
 
 	key := strings.TrimPrefix(r.URL.Path, "/web/update/assignee/")
 	assignee := r.FormValue("assignee")
-	UpdateTicket(h.db, key, map[string]interface{}{"assignee": assignee})
+	_, _ = UpdateTicket(h.db, key, map[string]interface{}{"assignee": assignee})
 
 	ticket, _ := GetTicket(h.db, key)
 	users, _ := ListUsers(h.db)
@@ -258,5 +258,5 @@ func (h *webHandler) handleWebUpdateAssignee(w http.ResponseWriter, r *http.Requ
 		"Users":    users,
 		"Statuses": validStatuses,
 	}
-	h.tmpl.ExecuteTemplate(w, "assignee_dropdown", data)
+	_ = h.tmpl.ExecuteTemplate(w, "assignee_dropdown", data)
 }

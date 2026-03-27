@@ -66,7 +66,7 @@ func handleSearch(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"startAt":    0,
 		"maxResults": len(issues),
 		"total":      len(issues),

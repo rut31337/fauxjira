@@ -10,7 +10,7 @@ func TestBasicAuthValid(t *testing.T) {
 	db, _ := testDB(t)
 	handler := BasicAuth(db, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := r.Context().Value(ctxUserKey).(*User)
-		w.Write([]byte(user.Username))
+		_, _ = w.Write([]byte(user.Username))
 	}))
 
 	req := httptest.NewRequest("GET", "/", nil)
@@ -29,7 +29,7 @@ func TestBasicAuthValid(t *testing.T) {
 func TestBasicAuthInvalid(t *testing.T) {
 	db, _ := testDB(t)
 	handler := BasicAuth(db, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("should not reach"))
+		_, _ = w.Write([]byte("should not reach"))
 	}))
 
 	req := httptest.NewRequest("GET", "/", nil)
@@ -45,7 +45,7 @@ func TestBasicAuthInvalid(t *testing.T) {
 func TestBasicAuthNoCredentials(t *testing.T) {
 	db, _ := testDB(t)
 	handler := BasicAuth(db, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("should not reach"))
+		_, _ = w.Write([]byte("should not reach"))
 	}))
 
 	req := httptest.NewRequest("GET", "/", nil)
@@ -60,7 +60,7 @@ func TestBasicAuthNoCredentials(t *testing.T) {
 func TestAdminOnlyAllowsAdmin(t *testing.T) {
 	db, _ := testDB(t)
 	handler := BasicAuth(db, AdminOnly(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("admin-only"))
+		_, _ = w.Write([]byte("admin-only"))
 	})))
 
 	req := httptest.NewRequest("GET", "/", nil)
