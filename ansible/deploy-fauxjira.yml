@@ -5,13 +5,13 @@
   gather_facts: false
 
   vars:
-    fauxjira_namespace: "{{ fauxjira_namespace | default('fauxjira') }}"
-    fauxjira_git_repo: "{{ fauxjira_git_repo | default('https://github.com/rut31337/fauxjira.git') }}"
-    fauxjira_git_ref: "{{ fauxjira_git_ref | default('main') }}"
-    fauxjira_admin_password: "{{ fauxjira_admin_password | default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits')) }}"
-    fauxjira_user_password: "{{ fauxjira_user_password | default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits')) }}"
-    fauxjira_storage_size: "{{ fauxjira_storage_size | default('1Gi') }}"
-    fauxjira_port: "{{ fauxjira_port | default('6778') }}"
+    fauxjira_namespace: fauxjira
+    fauxjira_git_repo: https://github.com/rut31337/fauxjira.git
+    fauxjira_git_ref: main
+    fauxjira_admin_password: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}"
+    fauxjira_user_password: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}"
+    fauxjira_storage_size: 1Gi
+    fauxjira_port: "6778"
 
   tasks:
     - name: Create namespace
@@ -59,50 +59,50 @@
             triggers:
               - type: ConfigChange
 
-    - name: Start build and wait for completion
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: build.openshift.io/v1
-          kind: Build
-          metadata:
-            name: fauxjira-1
-            namespace: "{{ fauxjira_namespace }}"
-            labels:
-              buildconfig: fauxjira
-          spec:
-            source:
-              type: Git
-              git:
-                uri: "{{ fauxjira_git_repo }}"
-                ref: "{{ fauxjira_git_ref }}"
-            strategy:
-              type: Docker
-              dockerStrategy:
-                dockerfilePath: Dockerfile
-            output:
-              to:
-                kind: ImageStreamTag
-                name: fauxjira:latest
-            serviceAccount: builder
+    - name: Get latest git commit
+      ansible.builtin.command:
+        cmd: git ls-remote {{ fauxjira_git_repo }} {{ fauxjira_git_ref }}
+      register: git_remote
+      changed_when: false
+
+    - name: Set latest commit SHA
+      ansible.builtin.set_fact:
+        latest_commit: "{{ git_remote.stdout.split('\t')[0][:7] }}"
+
+    - name: Check last successful build commit
+      ansible.builtin.command:
+        cmd: >-
+          oc get builds -n {{ fauxjira_namespace }} -l buildconfig=fauxjira
+          -o jsonpath='{range .items[?(@.status.phase=="Complete")]}{.spec.revision.git.commit}{"\n"}{end}'
+      register: built_commits
+      changed_when: false
+      failed_when: false
+
+    - name: Start build if source has changed
+      ansible.builtin.command:
+        cmd: oc start-build fauxjira -n {{ fauxjira_namespace }} --wait=false
+      register: start_build
+      changed_when: true
+      when: latest_commit not in built_commits.stdout
 
     - name: Wait for build to complete
-      kubernetes.core.k8s_info:
-        kind: Build
-        namespace: "{{ fauxjira_namespace }}"
-        label_selectors:
-          - buildconfig=fauxjira
-      register: build_info
-      until: >-
-        build_info.resources | length > 0 and
-        build_info.resources[-1].status.phase | default('') in ['Complete', 'Failed', 'Error', 'Cancelled']
+      ansible.builtin.command:
+        cmd: >-
+          oc get builds -n {{ fauxjira_namespace }} -l buildconfig=fauxjira
+          -o jsonpath='{.items[-1:].status.phase}'
+      register: build_phase
+      until: build_phase.stdout in ['Complete', 'Failed', 'Error', 'Cancelled']
       retries: 60
       delay: 10
+      changed_when: false
+      when: latest_commit not in built_commits.stdout
 
     - name: Fail if build did not succeed
-      fail:
-        msg: "Build failed with phase: {{ build_info.resources[-1].status.phase }}"
-      when: build_info.resources[-1].status.phase != 'Complete'
+      ansible.builtin.fail:
+        msg: "Build failed with phase: {{ build_phase.stdout }}"
+      when:
+        - latest_commit not in built_commits.stdout
+        - build_phase.stdout != 'Complete'
 
     - name: Create PVC for SQLite storage
       kubernetes.core.k8s:
