@@ -21,3 +21,10 @@ repos:
       - id: yamllint
         args: ['-d', '{extends: relaxed, rules: {line-length: {max: 200}}}']
         files: \.(yaml|yml)$
+
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v24.10.0
+    hooks:
+      - id: ansible-lint
+        files: ansible/
+        args: ['--profile=basic']

@@ -67,3 +67,17 @@ jobs:
             rules:
               line-length:
                 max: 200
+
+  ansible-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ansible-lint
+        run: pip install ansible-lint kubernetes.core
+
+      - name: Ansible syntax check
+        run: ansible-playbook ansible/deploy-fauxjira.yml --syntax-check
+
+      - name: Ansible lint
+        run: ansible-lint ansible/deploy-fauxjira.yml --profile=basic
