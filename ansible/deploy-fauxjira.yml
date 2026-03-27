@@ -14,8 +14,8 @@
     fauxjira_namespace: fauxjira
     fauxjira_git_repo: https://github.com/rut31337/fauxjira.git
     fauxjira_git_ref: main
-    fauxjira_admin_password: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}"
-    fauxjira_user_password: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}"
+    fauxjira_admin_password: changeme-admin
+    fauxjira_user_password: changeme-user
     fauxjira_storage_size: 1Gi
     fauxjira_port: "6778"
 
