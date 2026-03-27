@@ -9,8 +9,6 @@
 <body>
   <div class="login-page">
     <img src="/static/logo.png" alt="fauxjira" class="login-logo">
-    <div class="login-title">FAUXJIRA</div>
-    <div class="login-subtitle">Project Mismanagement Tool</div>
     <form class="login-form" method="POST" action="/login">
       {{if .Error}}<div style="color:#de350b;margin-bottom:12px;font-size:14px;">{{.Error}}</div>{{end}}
       <div class="form-group">
