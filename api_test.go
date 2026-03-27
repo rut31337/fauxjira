@@ -119,3 +119,26 @@ func TestAPIDeleteIssue(t *testing.T) {
 		t.Error("expected ticket to be deleted")
 	}
 }
+
+func TestAPISearch(t *testing.T) {
+	db, _, mux := testServer(t)
+	RegisterSearchRoutes(mux, db)
+
+	CreateTicket(db, &Ticket{Summary: "Bug one", Status: "To Do", Assignee: "alice", Reporter: "admin", Labels: []string{"bug"}})
+	CreateTicket(db, &Ticket{Summary: "Task two", Status: "In Progress", Assignee: "bob", Reporter: "admin", Labels: []string{"infra"}})
+
+	req := authedRequest("GET", `/rest/api/2/search?jql=assignee+%3D+%22alice%22`, nil)
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if rr.Code != 200 {
+		t.Fatalf("expected 200, got %d: %s", rr.Code, rr.Body.String())
+	}
+
+	var resp map[string]interface{}
+	json.Unmarshal(rr.Body.Bytes(), &resp)
+	total := int(resp["total"].(float64))
+	if total != 1 {
+		t.Errorf("expected 1 result, got %d", total)
+	}
+}
