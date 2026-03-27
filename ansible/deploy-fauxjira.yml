@@ -1,0 +1,152 @@
+---
+- name: Deploy fauxjira to OpenShift
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    fauxjira_namespace: "{{ fauxjira_namespace | default('fauxjira') }}"
+    fauxjira_image: "{{ fauxjira_image | default('quay.io/prutledg/fauxjira:latest') }}"
+    fauxjira_admin_password: "{{ fauxjira_admin_password | default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits')) }}"
+    fauxjira_user_password: "{{ fauxjira_user_password | default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits')) }}"
+    fauxjira_storage_size: "{{ fauxjira_storage_size | default('1Gi') }}"
+
+  tasks:
+    - name: Create namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ fauxjira_namespace }}"
+
+    - name: Create PVC for SQLite storage
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: PersistentVolumeClaim
+          metadata:
+            name: fauxjira-data
+            namespace: "{{ fauxjira_namespace }}"
+          spec:
+            accessModes: [ReadWriteOnce]
+            resources:
+              requests:
+                storage: "{{ fauxjira_storage_size }}"
+
+    - name: Create Deployment
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: fauxjira
+            namespace: "{{ fauxjira_namespace }}"
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: fauxjira
+            template:
+              metadata:
+                labels:
+                  app: fauxjira
+              spec:
+                containers:
+                  - name: fauxjira
+                    image: "{{ fauxjira_image }}"
+                    ports:
+                      - containerPort: 8080
+                    env:
+                      - name: FAUXJIRA_ADMIN_PASSWORD
+                        value: "{{ fauxjira_admin_password }}"
+                      - name: FAUXJIRA_USER_PASSWORD
+                        value: "{{ fauxjira_user_password }}"
+                      - name: FAUXJIRA_DB_PATH
+                        value: /data/fauxjira.db
+                    volumeMounts:
+                      - name: data
+                        mountPath: /data
+                    readinessProbe:
+                      httpGet:
+                        path: /rest/api/2/serverInfo
+                        port: 8080
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                volumes:
+                  - name: data
+                    persistentVolumeClaim:
+                      claimName: fauxjira-data
+
+    - name: Create Service
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: fauxjira
+            namespace: "{{ fauxjira_namespace }}"
+          spec:
+            selector:
+              app: fauxjira
+            ports:
+              - port: 8080
+                targetPort: 8080
+
+    - name: Create Route
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            name: fauxjira
+            namespace: "{{ fauxjira_namespace }}"
+          spec:
+            to:
+              kind: Service
+              name: fauxjira
+            port:
+              targetPort: 8080
+            tls:
+              termination: edge
+              insecureEdgeTerminationPolicy: Redirect
+
+    - name: Wait for deployment to be ready
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        name: fauxjira
+        namespace: "{{ fauxjira_namespace }}"
+      register: deploy_info
+      until: >-
+        deploy_info.resources[0].status.readyReplicas | default(0) >= 1
+      retries: 30
+      delay: 10
+
+    - name: Get Route URL
+      kubernetes.core.k8s_info:
+        kind: Route
+        name: fauxjira
+        namespace: "{{ fauxjira_namespace }}"
+      register: route_info
+
+    - name: Set fauxjira facts
+      set_fact:
+        fauxjira_url: "https://{{ route_info.resources[0].spec.host }}"
+        fauxjira_admin_password: "{{ fauxjira_admin_password }}"
+        fauxjira_user_password: "{{ fauxjira_user_password }}"
+        fauxjira_user1: alice
+        fauxjira_user2: bob
+
+    - name: Display connection info
+      debug:
+        msg: |
+          fauxjira deployed successfully!
+          URL:            {{ fauxjira_url }}
+          Admin password: {{ fauxjira_admin_password }}
+          User password:  {{ fauxjira_user_password }}
+          Demo users:     alice, bob
